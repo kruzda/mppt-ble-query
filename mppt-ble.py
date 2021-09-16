@@ -4,6 +4,10 @@ import time
 import logging
 import os
 from threading import Timer
+import signal
+import sys
+
+
 
 logging.basicConfig(format='%(asctime)s %(message)s', level=logging.INFO)
 
@@ -30,9 +34,14 @@ def set_value(v):
     value = v
 
 def print_value(v):
-    if len(v) == 30:
-        print([str(i).zfill(3) for i in [int(b) for b in v]])
+    print([str(i).zfill(3) for i in [int(b) for b in v]])
 
+def handler(signum, frame):
+    print("Ctrl+C pressed. Disconnecting")
+    device.disconnect()
+    sys.exit()
+
+    
 class AnyDevice(gatt.Device):
 
     def services_resolved(self):
@@ -114,5 +123,7 @@ class AnyDevice(gatt.Device):
 
 device = AnyDevice(mac_address='98:7b:f3:5d:ca:02', manager=manager)
 device.connect()
+
+signal.signal(signal.SIGINT, handler)
 
 manager.run()
